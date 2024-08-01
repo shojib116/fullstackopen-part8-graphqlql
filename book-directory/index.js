@@ -2,6 +2,26 @@ const { ApolloServer } = require("@apollo/server");
 const { startStandaloneServer } = require("@apollo/server/standalone");
 const { v1: uuid } = require("uuid");
 
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
+const Author = require("./models/author");
+const Book = require("./models/book");
+
+require("dotenv").config();
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+console.log("connecting to", MONGODB_URI);
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connection to MongoDB: ", error.message);
+  });
+
 let authors = [
   {
     name: "Robert Martin",
@@ -109,7 +129,7 @@ const typeDefs = `
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     id: ID!
     genres: [String!]!
   }
@@ -138,28 +158,41 @@ const typeDefs = `
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (root, args) => {
-      if (!args.genre) return books;
-      return books.filter((book) => book.genres.includes(args.genre));
+    bookCount: async () => Book.collection.countDocuments(),
+    authorCount: async () => Author.collection.countDocuments(),
+    allBooks: async (root, args) => {
+      // if (!args.genre) return books;
+      // return books.filter((book) => book.genres.includes(args.genre));
+      return Book.find({});
     },
-    allAuthors: () => authors,
+    allAuthors: async () => Author.find({}),
   },
   Author: {
     bookCount: (author) =>
       books.filter((book) => book.author === author.name).length,
   },
   Mutation: {
-    addBook: (root, args) => {
-      const newBook = { ...args, id: uuid() };
+    addBook: async (root, args) => {
+      // const newBook = { ...args, id: uuid() };
 
-      if (!authors.find((a) => a.name === newBook.author)) {
-        authors = authors.concat({ name: newBook.author, id: uuid() });
+      // if (!authors.find((a) => a.name === newBook.author)) {
+      //   authors = authors.concat({ name: newBook.author, id: uuid() });
+      // }
+
+      // books = books.concat(newBook);
+      // return newBook;
+      const findAuthor = async (name) => await Author.findOne({ name });
+
+      const book = new Book({ ...args });
+
+      if (!(await findAuthor(args.author))) {
+        const newAuthor = new Author({ name: args.author });
+        await newAuthor.save();
       }
 
-      books = books.concat(newBook);
-      return newBook;
+      book.author = await findAuthor(args.author);
+
+      return book.save();
     },
     editAuthor: (root, args) => {
       const author = authors.find((author) => author.name === args.name);

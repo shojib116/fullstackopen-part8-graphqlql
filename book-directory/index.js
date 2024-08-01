@@ -22,6 +22,7 @@ mongoose
     console.log("error connection to MongoDB: ", error.message);
   });
 
+/*
 let authors = [
   {
     name: "Robert Martin",
@@ -47,6 +48,7 @@ let authors = [
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
 ];
+*/
 
 /*
  * Suomi:
@@ -62,6 +64,7 @@ let authors = [
  * Sin embargo, por simplicidad, almacenaremos el nombre del autor en conexión con el libro
  */
 
+/*
 let books = [
   {
     title: "Clean Code",
@@ -113,6 +116,7 @@ let books = [
     genres: ["classic", "revolution"],
   },
 ];
+*/
 
 /*
   you can remove the placeholder query once your first one has been implemented 
@@ -163,13 +167,22 @@ const resolvers = {
     allBooks: async (root, args) => {
       // if (!args.genre) return books;
       // return books.filter((book) => book.genres.includes(args.genre));
-      return Book.find({});
+      if (!args.genre) return Book.find({});
+
+      return Book.find({ genres: args.genre });
     },
     allAuthors: async () => Author.find({}),
   },
   Author: {
-    bookCount: (author) =>
-      books.filter((book) => book.author === author.name).length,
+    bookCount: async (author) => {
+      const books = await Book.find({ author: author._id });
+      return books.length;
+    },
+  },
+  Book: {
+    author: async (book) => {
+      return Author.findById(book.author);
+    },
   },
   Mutation: {
     addBook: async (root, args) => {
@@ -194,15 +207,21 @@ const resolvers = {
 
       return book.save();
     },
-    editAuthor: (root, args) => {
-      const author = authors.find((author) => author.name === args.name);
+    editAuthor: async (root, args) => {
+      // const author = authors.findOne((author) => author.name === args.name);
+      // if (!author) return null;
+
+      // const updatedAuthor = { ...author, born: args.setBornTo };
+      // authors = authors.map((a) =>
+      //   a.id === updatedAuthor.id ? updatedAuthor : a
+      // );
+      // return updatedAuthor;
+      const author = await Author.findOne({ name: args.name });
       if (!author) return null;
 
-      const updatedAuthor = { ...author, born: args.setBornTo };
-      authors = authors.map((a) =>
-        a.id === updatedAuthor.id ? updatedAuthor : a
-      );
-      return updatedAuthor;
+      author.born = args.setBornTo;
+
+      return author.save();
     },
   },
 };

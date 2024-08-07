@@ -29,8 +29,13 @@ const AuthorForm = ({ authors }) => {
           onChange={(e) => setName(e.target.value)}
         />{" "}
         <br /> */}
-        <select name="name" id="name" onChange={(e) => setName(e.target.value)}>
-          <option disabled selected>
+        <select
+          name="name"
+          id="name"
+          onChange={(e) => setName(e.target.value)}
+          defaultValue=""
+        >
+          <option disabled value="">
             Select a name
           </option>
           {authors.map((a) => (

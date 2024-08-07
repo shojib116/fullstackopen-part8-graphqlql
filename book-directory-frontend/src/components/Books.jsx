@@ -1,14 +1,53 @@
 import { useQuery } from "@apollo/client";
 import { ALL_BOOKS } from "../queries";
+import { useState } from "react";
+
+const filterList = [
+  "refactoring",
+  "agile",
+  "patterns",
+  "design",
+  "crime",
+  "classic",
+  "all genres",
+];
+
+const Filters = ({ filter, setFilter }) => {
+  return (
+    <div>
+      {filterList.map((value) => (
+        <FilterItem
+          value={value}
+          filter={filter}
+          setFilter={setFilter}
+          key={value}
+        />
+      ))}
+    </div>
+  );
+};
+
+const FilterItem = ({ value, filter, setFilter }) => {
+  return (
+    <button onClick={() => setFilter(value)} disabled={filter === value}>
+      {value}
+    </button>
+  );
+};
 
 const Books = () => {
+  const defaultFilter = "all genres";
   const result = useQuery(ALL_BOOKS);
+  const [filter, setFilter] = useState(defaultFilter);
 
   if (result.loading) {
     return <div>loading books...</div>;
   }
 
-  const books = result.data.allBooks;
+  const books =
+    filter === defaultFilter
+      ? result.data.allBooks
+      : result.data.allBooks.filter((book) => book.genres.includes(filter));
 
   return (
     <div>
@@ -30,6 +69,7 @@ const Books = () => {
           ))}
         </tbody>
       </table>
+      <Filters filter={filter} setFilter={setFilter} />
     </div>
   );
 };

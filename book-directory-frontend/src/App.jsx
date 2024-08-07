@@ -5,8 +5,10 @@ import NewBook from "./components/NewBook";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import { useApolloClient } from "@apollo/client";
+import Recommendations from "./components/Recommendations";
 
 const App = () => {
+  const linkStyle = { textDecoration: "none", color: "black" };
   const [token, setToken] = useState(null);
 
   const client = useApolloClient();
@@ -28,35 +30,31 @@ const App = () => {
     <div>
       <div>
         <button>
-          <Link
-            to="/authors"
-            style={{ textDecoration: "none", color: "black" }}
-          >
+          <Link to="/authors" style={linkStyle}>
             authors
           </Link>
         </button>{" "}
         <button>
-          <Link to="/" style={{ textDecoration: "none", color: "black" }}>
+          <Link to="/" style={linkStyle}>
             books
           </Link>
         </button>{" "}
         {token && (
           <button>
-            <Link
-              to="/add-book"
-              style={{ textDecoration: "none", color: "black" }}
-            >
+            <Link to="/add-book" style={linkStyle}>
               add book
             </Link>
           </button>
         )}{" "}
+        <button>
+          <Link to="/recommendations" style={linkStyle}>
+            recommend
+          </Link>
+        </button>{" "}
         {token && <button onClick={logout}>logout</button>}{" "}
         {!token && (
           <button>
-            <Link
-              to="/login"
-              style={{ textDecoration: "none", color: "black" }}
-            >
+            <Link to="/login" style={linkStyle}>
               login
             </Link>
           </button>
@@ -66,6 +64,8 @@ const App = () => {
         <Route path="/" element={<Books />} />
         <Route path="/authors" element={<Authors />} />
         <Route path="/add-book" element={<NewBook />} />
+        <Route path="/add-book" element={<NewBook />} />
+        <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/login" element={<LoginForm setToken={setToken} />} />
       </Routes>
     </div>

@@ -5,6 +5,7 @@ import { ALL_AUTHORS, SET_BIRTH_YEAR } from "../queries";
 const AuthorForm = ({ authors }) => {
   const [name, setName] = useState("");
   const [born, setBorn] = useState("");
+  const token = localStorage.getItem("library-user-token");
 
   const [setBirthYear] = useMutation(SET_BIRTH_YEAR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
@@ -16,6 +17,9 @@ const AuthorForm = ({ authors }) => {
     setName("");
     setBorn("");
   };
+
+  if (!token) return null;
+
   return (
     <div>
       <h2>Set birthyear</h2>

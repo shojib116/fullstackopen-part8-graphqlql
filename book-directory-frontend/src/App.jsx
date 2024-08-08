@@ -46,11 +46,13 @@ const App = () => {
             </Link>
           </button>
         )}{" "}
-        <button>
-          <Link to="/recommendations" style={linkStyle}>
-            recommend
-          </Link>
-        </button>{" "}
+        {token && (
+          <button>
+            <Link to="/recommendations" style={linkStyle}>
+              recommend
+            </Link>
+          </button>
+        )}{" "}
         {token && <button onClick={logout}>logout</button>}{" "}
         {!token && (
           <button>

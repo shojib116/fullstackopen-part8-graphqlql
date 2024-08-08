@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { ALL_BOOKS } from "../queries";
+import { ALL_BOOKS, BOOKS_BY_GENRE } from "../queries";
 import { useState } from "react";
 
 const filterList = [
@@ -37,17 +37,25 @@ const FilterItem = ({ value, filter, setFilter }) => {
 
 const Books = () => {
   const defaultFilter = "all genres";
-  const result = useQuery(ALL_BOOKS);
   const [filter, setFilter] = useState(defaultFilter);
+  const result =
+    filter === defaultFilter
+      ? useQuery(ALL_BOOKS, { fetchPolicy: "no-cache" })
+      : useQuery(BOOKS_BY_GENRE, {
+          variables: { genre: filter },
+          fetchPolicy: "no-cache",
+        });
 
   if (result.loading) {
-    return <div>loading books...</div>;
+    return (
+      <div>
+        <h2>books</h2>
+        <p>loading books...</p>
+      </div>
+    );
   }
 
-  const books =
-    filter === defaultFilter
-      ? result.data.allBooks
-      : result.data.allBooks.filter((book) => book.genres.includes(filter));
+  const books = result.data.allBooks;
 
   return (
     <div>

@@ -6,6 +6,7 @@ const Recommendations = () => {
   const favoriteGenre = result.loading ? null : result.data.me.favoriteGenre;
   const booksByGenre = useQuery(BOOKS_BY_GENRE, {
     variables: { genre: favoriteGenre ? favoriteGenre : "" },
+    fetchPolicy: "no-cache",
   });
 
   if (result.loading || booksByGenre.loading)

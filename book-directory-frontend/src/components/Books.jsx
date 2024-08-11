@@ -1,5 +1,5 @@
-import { useQuery } from "@apollo/client";
-import { ALL_BOOKS, BOOKS_BY_GENRE } from "../queries";
+import { useQuery, useSubscription } from "@apollo/client";
+import { ALL_BOOKS, BOOK_ADDED, BOOKS_BY_GENRE } from "../queries";
 import { useState } from "react";
 
 const filterList = [
@@ -45,6 +45,13 @@ const Books = () => {
           variables: { genre: filter },
           fetchPolicy: "no-cache",
         });
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const book = data.data.bookAdded;
+      window.alert(`${book.title} by ${book.author.name} added`);
+    },
+  });
 
   if (result.loading) {
     return (

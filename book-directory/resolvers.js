@@ -21,12 +21,13 @@ const resolvers = {
     allAuthors: async () => Author.find({}),
     me: (root, args, context) => context.currentUser,
   },
-  Author: {
-    bookCount: async (author) => {
-      const books = await Book.find({ author: author._id });
-      return books.length;
-    },
-  },
+  // Author: {
+  //   bookCount: async (author) => {
+  //     console.log("Count.Find");
+  //     const books = await Book.find({ author: author._id });
+  //     return books.length;
+  //   },
+  // },
   Book: {
     author: async (book) => {
       return Author.findById(book.author);
@@ -55,7 +56,7 @@ const resolvers = {
       }
 
       if (!(await findAuthor(args.author))) {
-        const newAuthor = new Author({ name: args.author });
+        const newAuthor = new Author({ name: args.author, bookCount: 0 });
         try {
           await newAuthor.save();
         } catch (error) {
@@ -69,10 +70,14 @@ const resolvers = {
         }
       }
 
-      book.author = await findAuthor(args.author);
-
+      const author = await findAuthor(args.author);
+      book.author = author;
+      console.log(author);
       try {
         await book.save();
+        await Author.findByIdAndUpdate(author._id, {
+          $inc: { bookCount: 1 },
+        });
       } catch (error) {
         throw new GraphQLError("Saving book failed", {
           extensions: {

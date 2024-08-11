@@ -1,6 +1,22 @@
-import { useQuery, useSubscription } from "@apollo/client";
+import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import { ALL_BOOKS, BOOK_ADDED, BOOKS_BY_GENRE } from "../queries";
 import { useState } from "react";
+
+export const updateCache = (cache, query, addedBook) => {
+  const uniqByID = (a) => {
+    let seen = new Set();
+    return a.filter((item) => {
+      let k = item.id;
+      return seen.has(k) ? false : seen.add(k);
+    });
+  };
+
+  cache.updateQuery(query, ({ allBooks }) => {
+    return {
+      allBooks: uniqByID(allBooks.concat(addedBook)),
+    };
+  });
+};
 
 const filterList = [
   "refactoring",
@@ -40,16 +56,19 @@ const Books = () => {
   const [filter, setFilter] = useState(defaultFilter);
   const result =
     filter === defaultFilter
-      ? useQuery(ALL_BOOKS, { fetchPolicy: "no-cache" })
+      ? useQuery(ALL_BOOKS)
       : useQuery(BOOKS_BY_GENRE, {
           variables: { genre: filter },
           fetchPolicy: "no-cache",
         });
 
+  const client = useApolloClient();
+
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
-      const book = data.data.bookAdded;
-      window.alert(`${book.title} by ${book.author.name} added`);
+      const addedBook = data.data.bookAdded;
+
+      updateCache(client.cache, { query: ALL_BOOKS }, addedBook);
     },
   });
 
